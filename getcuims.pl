@@ -14,6 +14,8 @@ my $dbfile="cuim.sqlt";
 my @cuims;
 my $inserts=0;
 my $req;
+my $row;
+my $count;
 
 #----------------------------------------------------------------
 sub close_database {
@@ -57,6 +59,8 @@ sub get_cuim_json {
         print "$cuim json saved.\n";
     } else {
         return 1 unless $js->{message} !~ /per 1 day/;
+        my $st=$dbh->prepare("UPDATE cuimuri SET done=2 WHERE cuim = '$cuim'");
+        $st->execute();
     }
     return 0;
 }
@@ -64,10 +68,17 @@ sub get_cuim_json {
 #=================================================================
 #
 open_database();
+
+# count the records to be processed
+$sth=$dbh->prepare("SELECT count(*) FROM cuimuri WHERE done=0");
+$sth->execute();
+($count)=$sth->fetchrow_array;
+print "Processing $count cuims...\n";
+
 $sth=$dbh->prepare("SELECT cuim FROM cuimuri WHERE done=0");
 $sth->execute();
 
-my $count=0;
+$count=0;
 while (my $row=$sth->fetchrow_hashref()){
     if ( get_cuim_json($row->{cuim}) ) {
         print "ERR: max limit per day reached. Exit.\n";
