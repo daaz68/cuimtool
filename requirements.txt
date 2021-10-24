@@ -1,0 +1,5 @@
+LWP
+Parse::Json
+DBI
+DBD sqlite
+apt install libspreadsheet-parseexcel-perl libspreadsheet-parseexcel-simple-perl
