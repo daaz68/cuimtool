@@ -56,7 +56,7 @@ sub get_cuim_json {
         my $st=$dbh->prepare("UPDATE cuimuri SET done=1, json=? WHERE cuim = '$cuim'");
         $st->bind_param(1, $res->content, SQL_BLOB);
         $st->execute();
-        print "$cuim json saved.\n";
+        print ">>> $cuim json saved.";
     } else {
         return 1 unless $js->{message} !~ /per 1 day/;
         my $st=$dbh->prepare("UPDATE cuimuri SET done=2 WHERE cuim = '$cuim'");
@@ -78,7 +78,6 @@ print "Processing $count cuims...\n";
 $sth=$dbh->prepare("SELECT cuim FROM cuimuri WHERE done=0");
 $sth->execute();
 
-$count=0;
 while (my $row=$sth->fetchrow_hashref()){
     if ( get_cuim_json($row->{cuim}) ) {
         print "ERR: max limit per day reached. Exit.\n";
@@ -88,8 +87,9 @@ while (my $row=$sth->fetchrow_hashref()){
     my $slp;
     do {
         $slp = int(rand(12));
-    } while ( ($slp > 12) && ($slp < 3));
-    print "Sleeping $slp seconds...";
+    } while ( ($slp > 8) && ($slp < 3));
+    $count--;
+    print ">>> Sleeping $slp seconds ($count to go)...";
     sleep $slp;
 }
 close_database();
